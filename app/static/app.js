@@ -14,3 +14,19 @@ if(filePicker){
  document.querySelector('#import-csv').addEventListener('click',async event=>{event.target.disabled=true;try{const response=await fetch('/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv_text:editor.value})});const data=await response.json();if(!response.ok)throw Error(data.detail);location.href=location.pathname+'?run_id='+data.manifest.run_id;}catch(e){editor.setCustomValidity(e.message);editor.reportValidity();}finally{event.target.disabled=false;}});
  editor.addEventListener('input',()=>editor.setCustomValidity(''));
 }
+
+const calibForm=document.querySelector('#calib-form');
+if(calibForm){
+ calibForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const val=id=>document.querySelector(id).value.trim();
+  const tickets=val('#cal-tickets').split(/[,，、\s]+/).filter(Boolean);
+  const overrides={calibration:{scale_id:val('#cal-scale'),shift:val('#cal-shift'),window_start:val('#cal-start'),window_end:val('#cal-end'),deviation_kg:val('#cal-dev'),basis:val('#cal-basis'),tickets}};
+  const button=document.querySelector('#cal-apply');button.disabled=true;feedback.textContent='校准重算中…';
+  try{
+   const data=await request('/api/runs',{dataset:document.body.dataset.source,overrides});
+   feedback.textContent=`批次 ${data.manifest.run_id} · 重算 ${data.recalib.applied.length} 票 · 待处理 ${data.recalib.pending.length} 票`;
+   const url=new URL(location.href);url.searchParams.set('run_id',data.manifest.run_id);location.href=url;
+  }catch(error){feedback.textContent=error.message;button.disabled=false;}
+ });
+}

@@ -1,6 +1,6 @@
 # 深度登记 水产拍卖结算
 
-规模：中型。使用者：水产批发市场结算员。核心规则：先毛皮配对，再扣杂计价，按更正链选择唯一生效版，只支付差额。
+规模：中型。使用者：水产批发市场结算员。核心规则：先毛皮配对，再扣杂计价，校准偏差逐票重算，按更正链选择唯一生效版，只支付差额。
 
 ## 功能模块
 
@@ -10,9 +10,10 @@
 | M2 货品换算 | 查看并执行货品换算 | `POST /api/conversion` | `app/modules/conversion/rules.py` | `tests/test_conversion.py` |
 | M3 毛皮配对 | 查看并执行毛皮配对 | `POST /api/pairing` | `app/modules/pairing/rules.py` | `tests/test_pairing.py` |
 | M4 扣杂竞价 | 查看并执行扣杂竞价 | `POST /api/auction` | `app/modules/auction/rules.py` | `tests/test_auction.py` |
-| M5 更正裁决 | 查看并执行更正裁决 | `POST /api/correction` | `app/modules/correction/rules.py` | `tests/test_correction.py` |
-| M6 应付对账 | 查看并执行应付对账 | `POST /api/reconcile` | `app/modules/reconcile/rules.py` | `tests/test_reconcile.py` |
-| M7 结算归档 | 查看并执行结算归档 | `POST /api/archive` | `app/modules/archive/rules.py` | `tests/test_archive.py` |
+| M5 校准重算 | 查看并执行校准重算 | `POST /api/recalib` | `app/modules/recalib/rules.py` | `tests/test_recalib.py` |
+| M6 更正裁决 | 查看并执行更正裁决 | `POST /api/correction` | `app/modules/correction/rules.py` | `tests/test_correction.py` |
+| M7 应付对账 | 查看并执行应付对账 | `POST /api/reconcile` | `app/modules/reconcile/rules.py` | `tests/test_reconcile.py` |
+| M8 结算归档 | 查看并执行结算归档 | `POST /api/archive` | `app/modules/archive/rules.py` | `tests/test_archive.py` |
 
 ## 陷阱登记
 
@@ -30,10 +31,15 @@
 | TRAP-06 | 全角千分位 | 静默错算或丢失证据 | 显式归一与原因裁决 | `app/modules/conversion/rules.py` | `tests/test_conversion.py::test_fullwidth_thousands` |
 | TRAP-10 | 金额半分舍入 | 静默错算或丢失证据 | 显式归一与原因裁决 | `app/modules/auction/rules.py` | `tests/test_auction.py::test_half_cent_rounding` |
 | TRAP-26 | 陈旧更正分支 | 静默错算或丢失证据 | 显式归一与原因裁决 | `app/modules/correction/rules.py` | `tests/test_correction.py::test_stale_branch` |
+| TRAP-27 | 复秤票再套偏差修正 | 重复修正多补退 | 复秤检测转待处理 | `app/modules/recalib/rules.py` | `tests/test_recalib.py::test_reweighed_pending` |
+| TRAP-28 | 秤号或时间窗对不上 | 误改未受影响票 | 轨迹核对转待处理 | `app/modules/recalib/rules.py` | `tests/test_recalib.py::test_scale_mismatch_pending` |
+| TRAP-29 | 重算版切换失败 | 半切换丢旧版 | 逐票校验失败回退旧版 | `app/modules/recalib/rules.py` | `tests/test_recalib.py::test_switch_failure_rolls_back` |
+| TRAP-30 | 重跑重复补退 | 差额重复累计 | 同输入同批号幂等 | `app/engine.py` | `tests/test_recalib.py::test_rerun_no_duplicate_delta` |
 
 ## 对账规则
 
 输入=采纳原始行+隔离行+空行+同值重复行+重复表头。计价版本总额与生效票总额分别展示，避免把更正前后重复求和。最终应付=已付+待付，负待付为退款。
+校准重算按票生成重算版（替代当前生效版）进入更正链，补退差额=重算应付−累计已付；秤号、时间窗、复秤史任一核对失败即转待处理，旧版保持生效。
 
 ## 已知不覆盖
 

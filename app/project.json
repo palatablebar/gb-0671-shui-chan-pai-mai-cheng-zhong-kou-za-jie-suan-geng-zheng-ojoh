@@ -8,11 +8,12 @@
     "货品换算",
     "毛皮配对",
     "扣杂竞价",
+    "校准重算",
     "更正裁决",
     "应付对账",
     "结算归档"
   ],
-  "rule": "双次称重先配对，再按品类扣杂；更正只能替代指定版本，禁止重复支付",
+  "rule": "双次称重先配对，再按品类扣杂；校准偏差逐票重算并替代生效版；更正只能替代指定版本，禁止重复支付",
   "lane": "L1",
   "bg": "深海墨蓝",
   "hue": "青188°",
@@ -27,6 +28,7 @@
     "conversion",
     "pairing",
     "auction",
+    "recalib",
     "correction",
     "reconcile",
     "archive"
@@ -63,6 +65,20 @@
     "repeated_header": "重复表头",
     "row_balanced": "行守恒",
     "money_balanced": "金额守恒",
-    "blocked": "阻断项"
+    "blocked": "阻断项",
+    "gross_before": "原毛重 kg",
+    "gross_after": "校准毛重 kg",
+    "net_before": "原净重 kg",
+    "net_after": "重算净重 kg",
+    "amount_before": "原应付 CNY",
+    "amount_after": "重算应付 CNY",
+    "delta": "补退 CNY",
+    "scale_id": "秤号",
+    "shift": "班次",
+    "window_start": "窗口起",
+    "window_end": "窗口止",
+    "deviation_kg": "偏差 kg",
+    "correction_kg": "修正量 kg",
+    "basis": "校准依据"
   }
 }
